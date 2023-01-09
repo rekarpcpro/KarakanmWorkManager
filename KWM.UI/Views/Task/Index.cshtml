@@ -1,0 +1,334 @@
+﻿@model List<TaskViewModel>
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+@section Links{
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
+
+}
+
+    <style>
+        .table-content {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            font-size: 1.5em;
+        }
+
+            .table-content thead tr {
+                background-color: #009879;
+                border-radius: 10px 10px 10px 10px;
+                color: white;
+                text-align: left;
+                font-weight: bold;
+                margin: 15px 0;
+            }
+
+            .table-content tbody tr {
+                border-bottom: 1px solid #dddddd
+            }
+
+                .table-content tbody tr:nth-of-type(even) {
+                    background-color: #f3f3f3;
+                }
+
+                .table-content tbody tr:last-of-type {
+                    border-bottom: 2px solid #009879;
+                }
+
+            .table-content th {
+                width: 30%;
+                padding: 12px 15px;
+            }
+
+                .table-content th:first-child {
+                    width: 1%;
+                    white-space: nowrap;
+                }
+
+            .table-content td {
+                padding: 5px 15px;
+            }
+
+
+
+            .table-content a {
+                text-decoration: none;
+                color: #009879
+            }
+
+                .table-content a:hover {
+                    text-decoration: none;
+                    color: #009879
+                }
+
+        .title {
+            width: 30% !important
+        }
+
+        .reorder {
+            width: 10% !important;
+            text-align: center;
+            cursor: move;
+        }
+
+        .actions {
+            width: 20% !important;
+            text-decoration: none;
+            margin: 15px;
+        }
+
+            .actions a {
+                margin: 0 5px;
+            }
+
+        .done-column {
+            width: 10% !important;
+            text-align: center;
+        }
+
+        .td-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 0;
+            white-space: nowrap
+        }
+
+        .action-complete {
+            border: none;
+            background-color: transparent;
+            color: #2B7A0B !important;
+        }
+
+        .action-edit {
+            color: #14248A !important;
+        }
+
+        .action-delete {
+            color: #DF2935 !important;
+        }
+
+        .completed-icon {
+            color: #2B7A0B !important;
+        }
+
+        .disabled {
+            pointer-events: none;
+            cursor: default;
+            text-decoration: none !important;
+            color: gray !important;
+        }
+
+        .dragging {
+            background-color: #B2B2B2 !important;
+        }
+
+        @@media screen and (max-width: 600px) {
+            .description {
+                visibility: hidden;
+                display: none
+            }
+
+            .title {
+                width: 65%
+            }
+        }
+
+        @@media screen and (max-width: 1000px) {
+
+            .reorder {
+                visibility: hidden;
+                display: none
+            }
+        }
+
+    </style>
+
+
+    <form action="">
+        <table class="table-content">
+            <thead>
+                <tr>
+                    <th class="index">#</th>
+                    <th class="title">Title</th>
+                    <th class="description">Description</th>
+                    <th class="reorder">Reorder</th>
+                    <th>Actions</th>
+                    <th class="done-column">Done</th>
+                </tr>
+            </thead>
+            <tbody class="t-container">
+
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr class="draggable" draggable="true">
+
+                    <td class="index">@(i + 1)</td>
+
+                    <td class="task-id" hidden>@Model[i].Id</td>
+
+                    <td class="td-truncate title">
+                        <a asp-action="OpenTask" asp-controller="Task" asp-route-id="@Model[i].Id" draggable="false">@Model[i].Title</a>
+                    </td>
+                    <td class="td-truncate description">
+                        <a asp-action="OpenTask" asp-controller="Task" asp-route-id="@Model[i].Id" draggable="false">@Model[i].Description</a>
+                    </td>
+                    <td class="reorder">
+                        <i class="fa-solid fa-bars"></i>
+                    </td>
+                    <td class="actions">
+                        <button onclick="completeTask(@Model[i].Id, this)" type="button" class="action-complete @(Model[i].IsCompleted ? "disabled" : "")"><i class="fa-solid fa-clipboard-check action-icons"></i></button>
+                        <a asp-action="Delete" asp-controller="Task" asp-route-id="@Model[i].Id" draggable="false" class="action-delete" style="margin-right: auto;"><i class="fa-sharp fa-solid fa-trash action-icons"></i></a>
+                    </td>
+                    <td class="done-column" id="done_@(Model[i].Id)">
+                        @if (Model[i].IsCompleted)
+                        {
+                            <span class="completed-icon"><i class="fa-solid fa-check"></i></span>
+                        }
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+@section Scripts{
+    <script>
+
+        const draggables = document.querySelectorAll('.draggable')
+        const container = document.querySelector('.t-container')
+
+        var taskId;
+        var oldIndex;
+        var newIndex;
+
+        draggables.forEach(x => {
+            x.addEventListener('dragstart', () => {
+                x.classList.add('dragging')
+
+                taskId = $('.dragging').children('.task-id').text()
+                oldIndex = $('.dragging').children('.index').text()
+            })
+
+            x.addEventListener('dragend', () => {
+
+                reorder()
+
+                newIndex = $('.dragging').children('.index').text()
+
+                x.classList.remove('dragging')
+
+                if (oldIndex != newIndex) {
+                    saveReorder()
+                }
+
+            })
+        })
+
+        container.addEventListener('dragover', e => {
+
+            e.preventDefault()
+            const afterElement = getDragAfterElement(e.clientY)
+            const draggable = document.querySelector('.dragging')
+
+            if (draggable.tagName != 'TR') {
+                return
+            }
+
+            if (afterElement == null) {
+                container.appendChild(draggable)
+            } else {
+                container.insertBefore(draggable, afterElement)
+            }
+
+
+
+        })
+
+        function getDragAfterElement(y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')]
+
+            return draggableElements.reduce((closest, child) => {
+
+                const box = child.getBoundingClientRect()
+                const offset = y - box.top - box.height / 2
+
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child }
+
+                } else {
+                    return closest
+                }
+
+
+            }, { offset: Number.NEGATIVE_INFINITY }).element
+
+        }
+
+
+        function reorder(taskId, oldIndex, newIndex) {
+            var index = 1
+
+            $("table > tbody > tr").each(function () {
+                $(this).find('td').eq(0).text(index)
+
+                index++
+            });
+
+        }
+
+        function saveReorder() {
+
+            $.post("@Url.Action("Reorder", "Task")", {
+                taskId: taskId,
+                oldPosition: oldIndex - 1,
+                newPosition: newIndex - 1
+            }).done(function (e) {
+
+                if (e == true) {
+                    // todo - notify user
+                } else {
+                    alert('Saving new tasks order to database has been failed! Reloading page...')
+                    location.reload();
+                }
+
+            }).fail(function () {
+                alert('Saving new tasks order to database has been failed! Reloading page...')
+                location.reload();
+            })
+            //.always(function (msg) {
+            //    console.log('ALWAYS');
+            //});
+        }
+
+        function completeTask(id, btn) {
+
+            $.post("@Url.Action("CompleteTask", "Task")", {
+                id: id
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    $(btn).addClass('disabled')
+                    $('#done_' + id).append('<span class="completed-icon"><i class="fa-solid fa-check"></i></span>')
+
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+    </script>
+}
+

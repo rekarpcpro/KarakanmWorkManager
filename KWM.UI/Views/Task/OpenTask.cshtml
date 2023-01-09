@@ -1,0 +1,433 @@
+﻿@model TaskViewModel
+
+@{
+    ViewData["Title"] = "Task";
+}
+
+@section Links{
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
+
+}
+    <style>
+
+        .title-input {
+            color: black;
+            padding: 5px;
+            margin: 10px 0px;
+            width: 50%
+        }
+
+        .title-label, .desc-label {
+            font-weight: bold;
+        }
+
+        .desc-textarea {
+            color: black;
+            width: 80%;
+            height: 100px;
+            padding: 5px;
+            margin: 10px 0px;
+        }
+
+        .enableEditorBtn {
+            padding: 5px;
+            margin: 0px 5px;
+            background-color: white;
+            border: 2px solid mediumblue;
+        }
+
+            .enableEditorBtn:hover {
+                cursor: pointer;
+                background-color: mediumblue;
+                color: white;
+            }
+
+        .cancelUpdateBtn {
+            padding: 5px;
+            margin: 0px 5px;
+            background-color: white;
+            border: 2px solid red;
+        }
+
+            .cancelUpdateBtn:hover {
+                cursor: pointer;
+                background-color: red;
+                color: white;
+            }
+
+        .updateBtn {
+            padding: 5px;
+            margin: 0px 5px;
+            background-color: white;
+            border: 2px solid darkgreen;
+        }
+
+            .updateBtn:hover {
+                cursor: pointer;
+                background-color: darkgreen;
+                color: white;
+            }
+
+        .completeBtn {
+            padding: 5px;
+            margin: 0px 5px;
+            background-color: white;
+        }
+
+        .done-btn {
+            border: 2px solid darkgreen;
+        }
+
+
+            .done-btn:hover {
+                cursor: pointer;
+                background-color: darkgreen;
+                color: white;
+            }
+
+        .undone-btn {
+            border: 2px solid red;
+        }
+
+
+            .undone-btn:hover {
+                cursor: pointer;
+                background-color: red;
+                color: white;
+            }
+
+        .check {
+            position: relative;
+            top: 7px
+        }
+
+            .check i {
+                font-size: 2.5em;
+                color: darkgreen;
+                vertical-align: central;
+            }
+
+        .sub-title-input {
+            color: black;
+            padding: 5px;
+            margin: 10px 0px;
+            width: 40%
+        }
+
+        .Sub-desc-textarea {
+            color: black;
+            width: 60%;
+            height: 100px;
+            padding: 5px;
+            margin: 10px 0px;
+        }
+
+        .subTask{
+            border: 2px solid gray;
+            border-radius: 5px;
+            margin: 10px 0;
+            padding: 5px
+        }
+
+    </style>
+
+    <div class="title">
+        <label asp-for="Title" class="title-label"></label>
+
+        <button onclick="enableEditTitle(this)" type="button" id="enableTitleEditorBtn" class="enableEditorBtn">Edit</button>
+        <button onclick="cancelUpdateTitle(this)" type="button" id="cancelUpdateTitleBtn" class="cancelUpdateBtn" hidden>Cancel</button>
+        <button onclick="updateTitle(this)" type="button" id="updateTitleBtn" class="updateBtn" hidden>Update</button>
+
+        <br>
+        <input asp-for="Title" class="title-input" disabled />
+        <span id="checkTask" class="check" @(Model.IsCompleted ? "" : "hidden")><i class="fa-sharp fa-solid fa-circle-check"></i></span>
+
+    @if (Model.IsCompleted)
+    {
+
+        <button onclick="completeTask(this)" type="button" class="completeBtn undone-btn">Undone</button>
+    }
+    else
+    {
+        <button onclick="completeTask(this)" type="button" class="completeBtn done-btn">Done</button>
+    }
+
+</div>
+
+<div class="description">
+    <label asp-for="Description" class="desc-label"></label>
+    <button onclick="enableEditDesc(this)" type="button" id="enableDescEditorBtn" class="enableEditorBtn">Edit</button>
+    <button onclick="cancelUpdateDesc(this)" type="button" id="cancelUpdateDescBtn" class="cancelUpdateBtn" hidden>Cancel</button>
+    <button onclick="updateDesc(this)" type="button" id="updateDescBtn" class="updateBtn" hidden>Update</button>
+    <br>
+    <textarea asp-for="Description" class="desc-textarea" disabled>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quasi vero minima praesentium. Iusto, possimus et, nemo veniam consequuntur rem harum nostrum dicta porro corrupti ad! Voluptas iusto eligendi sit similique?</textarea>
+</div>
+
+<div class="subTasks">
+    @for (int i = 0; i < Model.SubTasks?.Count; i++)
+    {
+        <div class="subTask">
+            <div class="subTaskTitle">
+
+                <label asp-for="SubTasks[i].Title" class="title-label"></label>
+
+                <button onclick="enableEditSubTask(this, @Model.SubTasks[i].Id)" type="button" id="enableSubTaskEditorBtn_@Model.SubTasks[i].Id" class="enableEditorBtn">Edit</button>
+                <button onclick="cancelUpdateSubTask(this, @Model.SubTasks[i].Id)" type="button" id="cancelUpdatSubTaskBtn_@Model.SubTasks[i].Id" class="cancelUpdateBtn" hidden>Cancel</button>
+                <button onclick="updateSubTaske(this, @Model.SubTasks[i].Id)" type="button" id="updateSubTaskBtn_@Model.SubTasks[i].Id" class="updateBtn" hidden>Update</button>
+
+                <br />
+                <input asp-for="SubTasks[i].Title" id="subTitle_@(Model.SubTasks[i].Id)" class="sub-title-input" disabled>
+                <span id="checkSub_@Model.SubTasks[i].Id" class="check" @(Model.SubTasks[i].IsCompleted ? "" : "hidden")><i class="fa-sharp fa-solid fa-circle-check"></i></span>
+
+                @if (Model.SubTasks[i].IsCompleted)
+                {
+                    <button onclick="completeSubTask(this, @Model.SubTasks[i].Id)" type="button" class="completeBtn undone-btn">Undone</button>
+                }
+                else
+                {
+                    <button onclick="completeSubTask(this, @Model.SubTasks[i].Id)" type="button" class="completeBtn done-btn">Done</button>
+                }
+
+            </div>
+            <div class="subTaskDesc">
+                <textarea asp-for="SubTasks[i].Description" id="subDesc_@(Model.SubTasks[i].Id)" class="Sub-desc-textarea" disabled></textarea>
+
+            </div>
+        </div>
+    }
+</div>
+
+
+@section Scripts{
+
+    <script>
+
+        var s;
+        var taskTitle;
+        var taskDesc;
+
+        var subTitle;
+        var subDesc;
+
+        function enableEditTitle(btn) {
+
+            taskTitle = $('.title-input').val()
+
+            $(btn).attr('hidden', '')
+            $('.title-input').removeAttr('disabled')
+            $('#cancelUpdateTitleBtn').removeAttr('hidden')
+            $('#updateTitleBtn').removeAttr('hidden')
+
+        }
+
+        function cancelUpdateTitle(btn) {
+
+            $('.title-input').val(taskTitle)
+            $('.title-input').attr('disabled', '')
+
+            $(btn).attr('hidden', '')
+            $('#updateTitleBtn').attr('hidden', '')
+            $('#enableTitleEditorBtn').removeAttr('hidden')
+        }
+
+        function updateTitle(btn) {
+
+            $.post("@Url.Action("UpdateTaskTitle", "Task")", {
+                id: @Model.Id,
+                title: $('.title-input').val()
+
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    $('.title-input').attr('disabled', '')
+                    $(btn).attr('hidden', '')
+                    $('#cancelUpdateTitleBtn').attr('hidden', '')
+                    $('#enableTitleEditorBtn').removeAttr('hidden')
+
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+        function completeTask(btn) {
+
+            $.post("@Url.Action("CompleteTask", "Task")", {
+                id: @Model.Id
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    if ($(btn).text() == 'Done') {
+
+                        $(btn).text('Undone')
+                        $(btn).addClass('undone-btn')
+                        $(btn).removeClass('done-btn')
+                        $('#checkTask').removeAttr('hidden')
+
+                    } else {
+
+                        $(btn).text('Done')
+                        $(btn).addClass('done-btn')
+                        $(btn).removeClass('undone-btn')
+                        $('#checkTask').attr('hidden', '')
+
+                    }
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+        function enableEditDesc(btn) {
+
+            taskDesc = $('.desc-textarea').val()
+
+            $(btn).attr('hidden', '')
+
+            $('.desc-textarea').removeAttr('disabled')
+            $('#cancelUpdateDescBtn').removeAttr('hidden')
+            $('#updateDescBtn').removeAttr('hidden')
+
+        }
+
+        function cancelUpdateDesc(btn) {
+
+            $('.desc-textarea').val(taskDesc)
+            $('.desc-textarea').attr('disabled', '')
+
+            $(btn).attr('hidden', '')
+            $('#updateDescBtn').attr('hidden', '')
+            $('#enableDescEditorBtn').removeAttr('hidden')
+        }
+
+        function updateDesc(btn) {
+            $.post("@Url.Action("UpdateTaskDesc", "Task")", {
+                id: @Model.Id,
+                desc: $('.desc-textarea').val()
+
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    $('.desc-textarea').attr('disabled', '')
+                    $(btn).attr('hidden', '')
+                    $('#cancelUpdateDescBtn').attr('hidden', '')
+                    $('#enableDescEditorBtn').removeAttr('hidden')
+
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+        function enableEditSubTask(btn, id) {
+
+            if (s != null) {
+                alert(s)
+                cancelUpdateSubTask($('#cancelUpdatSubTaskBtn_' + s), s)
+            }
+
+            subTitle = $('#subTitle_' + id).val()
+            subDesc = $('#subDesc_' + id).val()
+
+            $(btn).attr('hidden', '')
+
+            $('#subTitle_' + id).removeAttr('disabled')
+            $('#subDesc_' + id).removeAttr('disabled')
+
+            $('#cancelUpdatSubTaskBtn_' + id).removeAttr('hidden')
+            $('#updateSubTaskBtn_' + id).removeAttr('hidden')
+
+            s = id
+        }
+
+        function cancelUpdateSubTask(btn, id){
+
+            $('#subTitle_' + id).val(subTitle)
+            $('#subDesc_' + id).val(subDesc)
+
+            $('#subTitle_' + id).attr('disabled', '')
+            $('#subDesc_' + id).attr('disabled', '')
+
+            $('#enableSubTaskEditorBtn_'+id).removeAttr('hidden')
+
+            $(btn).attr('hidden', '')
+            $('#updateSubTaskBtn_' + id).attr('hidden', '')
+
+            s = null
+        }
+
+        function updateSubTaske(btn, id){
+            
+            $.post("@Url.Action("UpdateSubTask", "Task")", {
+                id: id,
+                title: $('#subTitle_' + id).val(),
+                desc: $('#subDesc_' + id).val()
+
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    $('#subTitle_' + id).attr('disabled', '')
+                    $('#subDesc_' + id).attr('disabled', '')
+
+                    $('#enableSubTaskEditorBtn_' + id).removeAttr('hidden')
+
+                    $('#cancelUpdatSubTaskBtn_' + id).attr('hidden', '')
+                    $('#updateSubTaskBtn_' + id).attr('hidden', '')
+
+                    s = null
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+        function completeSubTask(btn, id){
+            $.post("@Url.Action("CompleteSubTask", "Task")", {
+                id: id
+            }).done(function (e) {
+
+                if (e == true) {
+
+                    if ($(btn).text() == 'Done') {
+
+                        $(btn).text('Undone')
+                        $(btn).addClass('undone-btn')
+                        $(btn).removeClass('done-btn')
+                        $('#checkSub_' + id).removeAttr('hidden')
+
+                    } else {
+
+                        $(btn).text('Done')
+                        $(btn).addClass('done-btn')
+                        $(btn).removeClass('undone-btn')
+                        $('#checkSub_' + id).attr('hidden', '')
+
+                    }
+                } else {
+                    alert('Action Faild!')
+                }
+
+            }).fail(function () {
+                alert('Action Faild!')
+            })
+        }
+
+    </script>
+}

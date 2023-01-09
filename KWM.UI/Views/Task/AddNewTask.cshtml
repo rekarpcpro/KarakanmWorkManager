@@ -1,0 +1,243 @@
+﻿@model TaskViewModel
+
+@{
+    ViewData["Title"] = "Add Task";
+}
+
+<style>
+    .form-row {
+        margin-bottom: 5px
+    }
+
+    .title-label, .description-label {
+        font-weight: bold
+    }
+
+    .title {
+        margin-top: 5px;
+        padding: 10px;
+        width: 50%;
+    }
+
+    .description {
+        margin-top: 5px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .title {
+    }
+
+    .btns {
+        border: 2px solid black;
+        background-color: white;
+        color: black;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top:5px;
+    }
+
+    .add-btn {
+        background-color: white;
+        border-color: #009879;
+        color: green;
+    }
+
+        .add-btn:hover {
+            background-color: #009879;
+            color: white;
+        }
+
+    .remove-btn {
+        background-color: white;
+        border-color: #f44336;
+        color: red
+    }
+
+        .remove-btn:hover {
+            background: #f44336;
+            color: white;
+        }
+
+
+    .wrappers {
+        position: relative;
+        padding: 15px;
+        border: 2px solid black;
+    }
+
+
+    .sub-title {
+        margin-top: 5px;
+        padding: 10px;
+        width: 50%;
+    }
+
+    .sub-description {
+        margin-top: 5px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .remove-sub-btn {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background-color: white;
+        border-color: #f44336;
+        color: red;
+        margin: 10px;
+    }
+
+        .remove-sub-btn:hover {
+            background: #f44336;
+            color: white;
+        }
+</style>
+
+
+<form method="post">
+
+    <div class="task">
+
+        <h3>Add Task</h3>
+
+        <div class="form-row">
+            <label asp-for="Title" class="title-label"></label> <br />
+            <input asp-for="Title" placeholder="e.g. Renew car insurance" class="title" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Description" class="description-label"></label> <br />
+            <textarea asp-for="Description" placeholder="Description" class="description"></textarea>
+        </div>
+
+
+    </div>
+    <div id="subTasks">
+
+        <h3>Add Sub Task</h3>
+        @if (Model?.SubTasks != null)
+        {
+            for (int i = 0; i < Model.SubTasks.Count; i++)
+            {
+                <div id="wrapper_@i" class="wrappers" style="margin-top:10px">
+                    <input id="SubTaskTitle" name="SubTasks[@i].Title" type="text" value="@Model.SubTasks[i].Title" placeholder="Title" class="title" required> <br />
+                    <input id="SubTaskDescription" name="SubTasks[@i].Description" type="text" value="@Model.SubTasks[i].Description" placeholder="Description" class="description"> <br />
+                    <button id="SubTaskRemoveButton_@i" class="SubTaskRemoveButton remove-sub-btn" onclick="removeSubTask(this.id)" type="button">Remove Sub Task</button>
+                </div>
+            }
+        }
+    </div>
+
+    <div asp-validation-summary="All" style="color:red"></div>
+
+    <button type="button" class="btns add-btn" id="addSubTask">Add a Subtask</button>
+
+    <input type="submit" class="btns add-btn" value="Create Task" />
+</form>
+
+
+@section Scripts {
+
+    <script>
+
+        var subTasks = $('#subTasks')
+
+        $('#addSubTask').click(function () {
+
+
+            var count = subTasks.children('div').length;
+
+            lastSubTitle = subTasks.children('div').find('input[id=SubTaskTitle]').last();
+            lastSubDisc = subTasks.children('div').find('input[id=SubTaskDescription]').last();
+
+            if (count > 0 && lastSubTitle.val() == '' && lastSubDisc.val() == '') {
+                alert('New sub task already added!');
+                return;
+            }
+
+            var wrapper = document.createElement("div");
+
+            wrapper.id = "wrapper_" + count;
+            wrapper.className = 'wrappers'
+            wrapper.style["margin-top"] = "10px";
+
+
+            subTasks.append(wrapper);
+
+            var input = document.createElement("input");
+            input.id = "SubTaskTitle";
+            input.className = "sub-title";
+            input.name = "SubTasks[" + count + "].Title";
+            input.placeholder = "Title";
+            input.type = "text";
+            input.required = "required";
+
+            wrapper.append(input);
+
+            wrapper.append(document.createElement("br"));
+
+
+            var description = document.createElement("input");
+            description.id = "SubTaskDescription";
+            description.className = "sub-description";
+            description.name = "SubTasks[" + count + "].Description";
+            description.placeholder = "Description";
+            description.type = "text";
+
+            wrapper.append(description);
+
+            wrapper.append(document.createElement("br"));
+
+            var btnId = "SubTaskRemoveButton_" + count
+
+            var removeButton = $('<button/>', {
+                type: 'button',
+                'class': 'SubTaskRemoveButton remove-sub-btn',
+                id: btnId,
+                text: 'Remove Sub Task'
+            });
+
+            removeButton.appendTo(wrapper);
+
+        })
+
+        $('#subTasks').on('click', 'button.SubTaskRemoveButton', function (e) {
+            removeSubTask(this.id)
+        });
+
+        $('.SubTaskRemoveButton').click(function () {
+            
+        })
+
+        function removeSubTask(id) {
+
+            $('#' + id).closest('div').remove();
+
+            var count = subTasks.children('div').length;
+
+            if (count != 0) {
+
+                var index = 0;
+
+                subTasks.children('div').each(function () {
+
+                    this.id = 'wrapper_' + index;
+
+                    $(this).children('input[id=SubTaskTitle]').attr("name", "SubTasks[" + index + "].Title");
+
+
+                    $(this).children('input[id=SubTaskDescription]').attr("name", "SubTasks[" + index + "].Description");
+
+
+                    $(this).children('button').attr("id", "SubTaskRemoveButton_" + index);
+                    index++;
+                });
+               
+            }
+
+        }
+
+    </script>
+}

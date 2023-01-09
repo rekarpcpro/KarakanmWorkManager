@@ -1,0 +1,169 @@
+﻿@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+    string returnUrl = (string)ViewData["returnUrl"] ?? "/Home";
+}
+
+
+@section Links{
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+}
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #009879;
+            font-family: "Roboto", sans-serif;
+        }
+
+        .form-container {
+            width: 40%;
+            max-width: 400px;
+            margin: auto;
+            margin-top: 10%;
+            padding: 45PX;
+            background-color: white;
+            box-shadow: 0 0 20px 0 rgb(0 0 0 / 20%), 0 5px 5px 0 rgb(0 0 0 / 24%);
+            text-align: center;
+        }
+
+        .text-field {
+            padding: 15px;
+            border: none;
+            background-color: #F2F2F2;
+            outline: none;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1.2em;
+        }
+
+        .stay {
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .stay-check {
+            transform: scale(2);
+            margin: 0 10px;
+        }
+
+        .stay-label {
+            user-select: none;
+            font-size: 1.2em;
+        }
+
+        .form-submit {
+            padding: 15px;
+            border: none;
+            background-color: #009879;
+            color: white;
+            outline: none;
+            margin-top: 10px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1.4em;
+        }
+
+        .header {
+            margin: 10px 0;
+        }
+
+        .form-container form p {
+            margin: 15px 0;
+            color: #888484;
+        }
+
+            .form-container form p a {
+                margin: 15px 0;
+                color: #009879;
+                text-decoration: none;
+            }
+
+        .ex-login {
+            margin-top: 25px;
+        }
+
+            .ex-login a {
+                color: white;
+                padding: 15px;
+            }
+
+        .google {
+            box-sizing: border-box;
+            background-color: #009879;
+            padding: 10px;
+            margin: 0 10px;
+        }
+
+        .facebook {
+            box-sizing: border-box;
+            background-color: gray;
+            pointer-events: none;
+            margin: 0 10px;
+        }
+
+        @@media only screen and (max-width: 1000px) {
+            .form-container {
+                width: 100%;
+            }
+        }
+
+    </style>
+
+
+    <div class="form-container">
+        <h1 class="header">
+            Login
+        </h1>
+        <form asp-action="Register" method="post" asp-route-returnUrl="@returnUrl">
+
+            <input asp-for="Email" class="text-field" placeholder="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+
+
+            <input asp-for="FirstName" class="text-field" placeholder="First Name" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+
+
+            <input asp-for="LastName" class="text-field" placeholder="Last Name" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+
+
+            <input asp-for="Password" class="text-field" placeholder="Password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+
+            <input asp-for="ConfirmPassword" class="text-field" placeholder="ConfirmPassword" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+
+            <div class="stay">
+                <input asp-for="StayLoggedIn" class="stay-check" />
+                <label asp-for="StayLoggedIn" class="stay-label"></label>
+            </div>
+
+            <input class="form-submit" type="submit">
+
+            <p class="message">Not registered? <a asp-action="Register" asp-route-returnUrl="@returnUrl">Create an account</a></p>
+
+            <div class="ex-login">
+
+                <a class="google" asp-action="GoogleLogin"><i class="fa-brands fa-google"></i></a>
+                <a class="facebook" href="#"><i class="fa-brands fa-facebook"></i></a>
+
+            </div>
+        </form>
+    </div>
+
+
+
+    @section Scripts {
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    }
